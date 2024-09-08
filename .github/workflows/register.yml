@@ -1,0 +1,84 @@
+name: "Create and register a new github runner"
+
+on: 
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: github repository where the runner will be added
+        required: true
+        type: string
+        default: '<user_name>/<repo_name>'
+        
+      ami_id:
+        description: aws ami id to use for the created instance 
+        required: false
+        type: string
+        default: ami-09d83d8d719da9808
+      instance_type:
+        description: ec2 instance type for the runner to launch
+        required: false
+        type: string
+        default: t2.micro
+jobs: 
+
+  build:
+    permissions:
+      id-token: write
+      contents: read 
+    runs-on: ubuntu-latest
+    env: 
+      TF_IN_AUTOMATION: TRUE
+      # TF_PLUGIN_CACHE_DIR: "./plugin-cache" # if you've got LFS , set this to avoid downloading the module at each run
+      TF_VAR_ami_id: ${{ inputs.ami_id}}
+      TF_VAR_instance_type:  ${{ inputs.instance_type }}
+      EXAMPLE: ${{ secrets.EXAMPLE }}
+      EXAMPLE2: ${{vars.EXAMPLE2}}
+    steps:
+      - name: Get infrastructure code
+        uses: actions/checkout@v4
+        
+      - name: Debug secrets
+        run: echo ${{ secrets.EXAMPLE }}
+      - name: debug vars
+        run: echo  ${{vars.EXAMPLE2}}
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-3
+          aws-access-key-id: ${{secrets.AWS_SECRET_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY}}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Get keys
+        run: |
+          aws s3 cp ${{ secrets.ec2_private_key }} ./private_key
+          chmod 600 private_key
+
+      - name: Init Terraform 
+        working-directory: terraform
+        run: |
+          terraform init
+
+      - name: Run Terraform 
+        working-directory: terraform
+        env:
+          TF_VAR_ec2_key_name: ${{ secrets.ec2_key_name }}
+        run: |
+          terraform apply -auto-approve  
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      - name: Run Ansible Playbook
+        working-directory: ansible
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False
+          GH_TOKEN: ${{ secrets.GH_TOKEN }} # gh_pat to request the token registering the runner
+          GH_REPO: ${{ inputs.repository }}
+        run: |
+          ansible-playbook -i ./inventory.yml ./playbook.yml 

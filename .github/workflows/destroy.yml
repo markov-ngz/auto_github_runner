@@ -1,0 +1,51 @@
+name: "Delete registered runner"
+
+on: 
+  workflow_dispatch:
+    inputs:
+      ami_id:
+        description: aws ami id to use for the created instance 
+        required: false
+        type: string
+        default: ami-09d83d8d719da9808
+      instance_type:
+        description: ec2 instance type for the runner to launch
+        required: false
+        type: string
+        default: t2.micro
+
+jobs: 
+  destroy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read 
+    env: 
+      TF_IN_AUTOMATION: TRUE
+      # TF_PLUGIN_CACHE_DIR: "./terraform/plugin-cache" # careful of dependency break
+      TF_VAR_ami_id: ${{ inputs.ami_id}}
+      TF_VAR_instance_type:  ${{ inputs.instance_type }}
+    steps:
+      - name: Get infrastructure code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-3
+          aws-access-key-id: ${{secrets.AWS_SECRET_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY}}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        
+      - name: Init Terraform
+        working-directory: terraform
+        run: terraform init
+        
+      - name: Terraform destroy
+        working-directory: terraform
+        env:
+          TF_VAR_ec2_key_name: ${{ secrets.ec2_key_name }}
+        run: |
+          terraform destroy -auto-approve  
