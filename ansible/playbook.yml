@@ -1,0 +1,11 @@
+---
+
+- name: Run image
+  become: true
+  hosts :
+    - gh_runner
+  roles :
+    - github_runner
+  vars:
+    gh_repo: "{{ lookup('ansible.builtin.env', 'GH_REPO') }}"
+

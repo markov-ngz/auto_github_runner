@@ -1,0 +1,9 @@
+all:
+  children:
+    runners:
+      children:
+        gh_runners:
+          hosts:
+            gh_runner:
+              ansible_host: gh_runner
+              ansible_ssh_extra_args:  -F ./config

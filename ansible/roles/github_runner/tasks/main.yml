@@ -1,0 +1,14 @@
+---
+
+- name: Install the github action runner
+  become: false
+  import_tasks: install.yml
+  
+- name: Register the runner 
+  become: false
+  import_tasks: register.yml
+
+- name: Run as a service 
+  become: true
+  import_tasks: service.yml
+

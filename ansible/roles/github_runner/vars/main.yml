@@ -1,0 +1,2 @@
+token_file_path: "./gh_token"
+action_dir: actions-runner

@@ -1,0 +1,21 @@
+---
+
+- name: Make action repository
+  ansible.builtin.file:
+    path: "{{ action_dir }}"
+    state: directory
+
+- name: Download package
+  shell: curl -o {{ package_file }} -L {{ package_url }}
+  args:
+    chdir: "{{ action_dir}}"
+
+- name: Validate the hash
+  shell: echo "{{ package_hash }}  {{ package_file }}" | shasum -a 256 -c
+  args:
+    chdir: "{{ action_dir}}"
+
+- name: Extract installer 
+  shell: tar xzf ./{{ package_file }}
+  args:
+    chdir: "{{ action_dir}}"

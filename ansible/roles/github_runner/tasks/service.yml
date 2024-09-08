@@ -1,0 +1,14 @@
+- name: Install as a service
+  shell: "sudo ./svc.sh install"
+  args:
+    chdir: "{{ action_dir }}"
+
+- name: Start the service
+  shell: "sudo ./svc.sh start"
+  args:
+    chdir: "{{ action_dir }}"
+
+- name: Check the service
+  shell: "sudo ./svc.sh status"
+  args:
+    chdir: "{{ action_dir }}"
