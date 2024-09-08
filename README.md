@@ -42,7 +42,7 @@ Integration to the production code of a new AI model by evaluating it against yo
 
 <img src="images/example_use_case.png" width=50%>
 
-** Please note that the infrastructure code is here to serve as an example for an easy setup, it is not recommended to use this for production. Or if you don't have a toaster as a computer, you can use Vagrant 🙃. 
+** Please note that the infrastructure code is here to serve as an example for an easy setup, it is not recommended to use this for production. Or if you don't have a toaster as a computer, you can use Vagrant. 
 
 ## Cite and share
 Please add the license to your work or add a star to the repository 😊
